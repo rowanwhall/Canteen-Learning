@@ -1,13 +1,14 @@
 package personal.rowan.canteenlearning.training
 
-import personal.rowan.canteenlearning.network.model.RestaurantItem
 import personal.rowan.canteenlearning.network.model.ZomatoSearchResponse
+import personal.rowan.canteenlearning.training.recycler.TrainingItemSelection
+import personal.rowan.canteenlearning.training.recycler.TrainingItemViewState
 
 /**
  * Created by Rowan Hall
  */
 class TrainingViewState private constructor(
-        var restaurants: ArrayList<RestaurantItem> = ArrayList(),
+        var restaurants: ArrayList<TrainingItemViewState> = ArrayList(),
         var offset: Int = 0,
         var totalSize: Int = -1,
         var showProgress: Boolean = false,
@@ -21,7 +22,7 @@ class TrainingViewState private constructor(
 
     fun fromResponse(response: ZomatoSearchResponse, clear: Boolean): TrainingViewState {
         val restaurants = if (clear) ArrayList() else this.restaurants
-        response.restaurants.forEach { restaurants.add(it.restaurantItem) }
+        response.restaurants.forEach { restaurants.add(TrainingItemViewState(it.restaurantItem, TrainingItemSelection.NONE)) }
         this.restaurants = restaurants
         this.offset += response.resultsShown
         this.totalSize = response.resultsFound

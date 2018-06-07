@@ -4,4 +4,7 @@
     <string name="training_restaurant_fetch_error">Failed to fetch more restaurants</string>
     <string name="training_restaurant_retry">Retry</string>
 
+    <string name="training_item_cuisines">Cuisines: %1$s</string>
+    <string name="training_item_cost">Average cost for two: %1$s%2$s</string>
+
 </resources>
