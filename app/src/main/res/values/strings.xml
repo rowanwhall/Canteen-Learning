@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Canteen Learning</string>
+
+    <string name="training_restaurant_fetch_error">Failed to fetch more restaurants</string>
+    <string name="training_restaurant_retry">Retry</string>
+
+</resources>
