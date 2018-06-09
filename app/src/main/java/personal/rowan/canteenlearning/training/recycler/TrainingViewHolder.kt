@@ -1,5 +1,6 @@
 package personal.rowan.canteenlearning.training.recycler
 
+import android.arch.lifecycle.Observer
 import android.content.res.ColorStateList
 import android.support.annotation.ColorRes
 import android.support.v4.content.ContextCompat
@@ -8,7 +9,6 @@ import android.view.View
 import android.widget.Button
 import com.jakewharton.rxbinding2.view.RxView
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.subjects.PublishSubject
 
 import kotlinx.android.synthetic.main.listitem_training.view.*
 import personal.rowan.canteenlearning.R
@@ -19,42 +19,45 @@ import personal.rowan.canteenlearning.R
 class TrainingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     private var selectionDisposables = CompositeDisposable()
+    private var selectionObserver: Observer<TrainingItemSelection>? = null
 
-    fun bind(selectionSubject: PublishSubject<TrainingSelectionClickEvent>, viewState: TrainingItemViewState) {
+    fun bind(viewState: TrainingItemViewState) {
         val context = itemView.context
         itemView.training_item_name_text.text = viewState.name()
         itemView.training_item_address_text.text = viewState.address()
         itemView.training_item_cuisines_text.text = viewState.cuisines(context)
         itemView.training_item_cost_text.text = viewState.cost(context)
 
-        fun bindButtonColors(button: Button, targetSelection: TrainingItemSelection, @ColorRes selectedColor: Int) {
+        fun bindButtonColors(selection: TrainingItemSelection, button: Button, targetSelection: TrainingItemSelection, @ColorRes selectedColor: Int) {
             button.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context,
-                    if (viewState.selection == targetSelection) selectedColor else R.color.gray))
+                    if (selection == targetSelection) selectedColor else R.color.gray))
         }
 
-        bindButtonColors(itemView.training_item_negative_button, TrainingItemSelection.NEGATIVE, android.R.color.holo_red_light)
-        bindButtonColors(itemView.training_item_neutral_button, TrainingItemSelection.NEUTRAL, android.R.color.holo_blue_light)
-        bindButtonColors(itemView.training_item_positive_button, TrainingItemSelection.POSITIVE, android.R.color.holo_green_light)
-        itemView.training_item_negative_button.isSelected = viewState.selection == TrainingItemSelection.NEGATIVE
-        itemView.training_item_neutral_button.isSelected = viewState.selection == TrainingItemSelection.NEUTRAL
-        itemView.training_item_positive_button.isSelected = viewState.selection == TrainingItemSelection.POSITIVE
+        selectionObserver?.let {
+            viewState.selection.removeObserver(selectionObserver!!)
+        }
+        selectionObserver = Observer {
+            it?.let {
+                bindButtonColors(it, itemView.training_item_negative_button, TrainingItemSelection.NEGATIVE, android.R.color.holo_red_light)
+                bindButtonColors(it, itemView.training_item_neutral_button, TrainingItemSelection.NEUTRAL, android.R.color.holo_blue_light)
+                bindButtonColors(it, itemView.training_item_positive_button, TrainingItemSelection.POSITIVE, android.R.color.holo_green_light)
+            }
+        }
+        viewState.selection.observeForever(selectionObserver!!)
 
-        val adapterPosition = getAdapterPosition()
         selectionDisposables.dispose()
         selectionDisposables = CompositeDisposable()
         selectionDisposables.addAll(
                 RxView.clicks(itemView.training_item_negative_button).subscribe {
-                    selectionSubject.onNext(TrainingSelectionClickEvent(adapterPosition, TrainingItemSelection.NEGATIVE))
+                    viewState.selection.value = TrainingItemSelection.NEGATIVE
                 },
                 RxView.clicks(itemView.training_item_neutral_button).subscribe {
-                    selectionSubject.onNext(TrainingSelectionClickEvent(adapterPosition, TrainingItemSelection.NEUTRAL))
+                    viewState.selection.value = TrainingItemSelection.NEUTRAL
                 },
                 RxView.clicks(itemView.training_item_positive_button).subscribe {
-                    selectionSubject.onNext(TrainingSelectionClickEvent(adapterPosition, TrainingItemSelection.POSITIVE))
+                    viewState.selection.value = TrainingItemSelection.POSITIVE
                 }
         )
     }
 
 }
-
-data class TrainingSelectionClickEvent(val index: Int, val selection: TrainingItemSelection)

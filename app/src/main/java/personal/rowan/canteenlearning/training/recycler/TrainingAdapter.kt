@@ -13,14 +13,6 @@ class TrainingAdapter: RecyclerView.Adapter<TrainingViewHolder>() {
 
     private var restaurants = ArrayList<TrainingItemViewState>()
     private var oldSize = 0
-    private val selectionSubject: PublishSubject<TrainingSelectionClickEvent> = PublishSubject.create()
-
-    init {
-        selectionSubject.subscribe {
-            restaurants[it.index].selection = it.selection
-            notifyItemChanged(it.index)
-        }
-    }
 
     fun paginateData(restaurants: ArrayList<TrainingItemViewState>) {
         val newSize = restaurants.size
@@ -38,7 +30,7 @@ class TrainingAdapter: RecyclerView.Adapter<TrainingViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: TrainingViewHolder, position: Int) {
-        holder.bind(selectionSubject, restaurants[position])
+        holder.bind(restaurants[position])
     }
 
 }
