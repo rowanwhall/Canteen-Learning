@@ -7,7 +7,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.Button
 import com.jakewharton.rxbinding2.view.RxView
-import io.reactivex.disposables.Disposable
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 
 import kotlinx.android.synthetic.main.listitem_training.view.*
@@ -18,9 +18,7 @@ import personal.rowan.canteenlearning.R
  */
 class TrainingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    private var negativeDisposable: Disposable? = null
-    private var neutralDisposable: Disposable? = null
-    private var positiveDisposable: Disposable? = null
+    private var selectionDisposables = CompositeDisposable()
 
     fun bind(selectionSubject: PublishSubject<TrainingSelectionClickEvent>, viewState: TrainingItemViewState) {
         val context = itemView.context
@@ -41,18 +39,20 @@ class TrainingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         itemView.training_item_neutral_button.isSelected = viewState.selection == TrainingItemSelection.NEUTRAL
         itemView.training_item_positive_button.isSelected = viewState.selection == TrainingItemSelection.POSITIVE
 
-        negativeDisposable?.dispose()
-        neutralDisposable?.dispose()
-        positiveDisposable?.dispose()
-        negativeDisposable = RxView.clicks(itemView.training_item_negative_button).subscribe {
-            selectionSubject.onNext(TrainingSelectionClickEvent(adapterPosition, TrainingItemSelection.NEGATIVE))
-        }
-        neutralDisposable = RxView.clicks(itemView.training_item_neutral_button).subscribe {
-            selectionSubject.onNext(TrainingSelectionClickEvent(adapterPosition, TrainingItemSelection.NEUTRAL))
-        }
-        positiveDisposable = RxView.clicks(itemView.training_item_positive_button).subscribe {
-            selectionSubject.onNext(TrainingSelectionClickEvent(adapterPosition, TrainingItemSelection.POSITIVE))
-        }
+        val adapterPosition = getAdapterPosition()
+        selectionDisposables.dispose()
+        selectionDisposables = CompositeDisposable()
+        selectionDisposables.addAll(
+                RxView.clicks(itemView.training_item_negative_button).subscribe {
+                    selectionSubject.onNext(TrainingSelectionClickEvent(adapterPosition, TrainingItemSelection.NEGATIVE))
+                },
+                RxView.clicks(itemView.training_item_neutral_button).subscribe {
+                    selectionSubject.onNext(TrainingSelectionClickEvent(adapterPosition, TrainingItemSelection.NEUTRAL))
+                },
+                RxView.clicks(itemView.training_item_positive_button).subscribe {
+                    selectionSubject.onNext(TrainingSelectionClickEvent(adapterPosition, TrainingItemSelection.POSITIVE))
+                }
+        )
     }
 
 }
