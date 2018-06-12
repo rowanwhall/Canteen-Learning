@@ -3,7 +3,6 @@ package personal.rowan.canteenlearning.training.recycler
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import io.reactivex.subjects.PublishSubject
 import personal.rowan.canteenlearning.R
 
 /**
